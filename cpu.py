@@ -10,6 +10,7 @@ class CPU:
         self.reg = [0] * 8
         self.PC = 0
         self.ram = [0] * 128
+        self.flag = [0] * 8
 
     def ram_read(self, address):
         return self.ram[address]
@@ -77,6 +78,11 @@ class CPU:
         CALL = 0b01010000
         RET = 0b00010001
         ADD = 0b10100000
+        CMP = 0b10100111
+        JMP = 0b01010100
+
+        JEQ = 0b01010101
+        JNE = 0b01010110
         running = True
 
         while running:
@@ -100,26 +106,46 @@ class CPU:
                 inc_size = 2
             elif IR == PUSH:
                 inc_size = 2
-                reg = self.ram[self.PC + 1]
-                val = self.reg[reg]
+                val = self.reg[operand_a]
                 self.reg[SP] -= 1
                 self.ram[self.reg[SP]] = val
             elif IR == POP:
                 inc_size = 2
-                reg = self.ram[self.PC + 1]
                 val = self.ram[self.reg[SP]]
-                self.reg[reg] = val
+                self.reg[operand_a] = val
                 self.reg[SP] += 1
             elif IR == CALL:
-                reg = self.ram[self.PC + 1]
                 self.reg[SP] -= 1
                 self.ram[self.reg[SP]] = self.PC + 2
-                self.PC = self.reg[reg]
+                self.PC = self.reg[operand_a]
                 inc_size = 0
             elif IR == RET:
                 self.PC = self.ram[self.reg[SP]]
                 self.reg[SP] += 1
                 inc_size = 0
+            elif IR == CMP:
+                inc_size = 3
+                if operand_a < operand_b:
+                    self.flag[5] = 1
+                elif operand_a > operand_b:
+                    self.flag[6] = 1
+                elif operand_a == operand_b:
+                    self.flag[7] = 1
+            elif IR == JMP:
+                self.pc = self.reg[operand_a]
+                inc_size = 0
+            elif IR == JEQ:
+                if self.flag[7] == 1:
+                    self.PC = self.reg[operand_a]
+                    inc_size = 0
+                else:
+                    inc_size = 2
+            elif IR == JNE:
+                if self.flag[7] == 0:
+                    self.PC = self.reg[operand_a]
+                    inc_size = 0
+                else:
+                    inc_size = 2
             else:
                 print(f"Invalid instruction {IR}")
                 sys.exit(1)
