@@ -80,7 +80,6 @@ class CPU:
         ADD = 0b10100000
         CMP = 0b10100111
         JMP = 0b01010100
-
         JEQ = 0b01010101
         JNE = 0b01010110
         running = True
@@ -124,25 +123,30 @@ class CPU:
                 self.reg[SP] += 1
                 inc_size = 0
             elif IR == CMP:
-                inc_size = 3
-                if operand_a < operand_b:
+                register_a = self.reg[self.ram[self.PC + 1]]
+                register_b = self.reg[self.ram[self.PC + 2]]
+                if register_a < register_b:
                     self.flag[5] = 1
-                elif operand_a > operand_b:
+                elif register_a > register_b:
                     self.flag[6] = 1
-                elif operand_a == operand_b:
+                elif register_a == register_b:
                     self.flag[7] = 1
+                inc_size = 3
             elif IR == JMP:
-                self.pc = self.reg[operand_a]
+                register_a = self.ram[self.PC + 1]
+                self.PC = self.reg[register_a]
                 inc_size = 0
             elif IR == JEQ:
                 if self.flag[7] == 1:
-                    self.PC = self.reg[operand_a]
+                    register_a = self.ram[self.PC + 1]
+                    self.PC = self.reg[register_a]
                     inc_size = 0
                 else:
                     inc_size = 2
             elif IR == JNE:
                 if self.flag[7] == 0:
-                    self.PC = self.reg[operand_a]
+                    register_a = self.ram[self.PC + 1]
+                    self.PC = self.reg[register_a]
                     inc_size = 0
                 else:
                     inc_size = 2
